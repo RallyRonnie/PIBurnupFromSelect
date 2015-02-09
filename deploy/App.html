@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PIBurnupFromSelect</title>
+
+    <script type="text/javascript" src="/apps/2.0/sdk.js"></script>
+
+    <script type="text/javascript">
+        Rally.onReady(function () {
+                Ext.define("Rally.example.BurnCalculator",{extend:"Rally.data.lookback.calculator.TimeSeriesCalculator",config:{completedScheduleStateNames:["Accepted"]},constructor:function(config){this.initConfig(config),this.callParent(arguments)},getDerivedFieldsOnInput:function(){var completedScheduleStateNames=this.getCompletedScheduleStateNames();return[{as:"Planned",f:function(snapshot){return snapshot.PlanEstimate?snapshot.PlanEstimate:0}},{as:"PlannedCompleted",f:function(snapshot){return _.contains(completedScheduleStateNames,snapshot.ScheduleState)&&snapshot.PlanEstimate?snapshot.PlanEstimate:0}}]},getMetrics:function(){return[{field:"Planned",as:"Planned",display:"line",f:"sum"},{field:"PlannedCompleted",as:"Completed",f:"sum",display:"column"}]}}),Ext.define("Rally.example.BurnChart",{extend:"Rally.app.App",requires:["Rally.example.BurnCalculator"],launch:function(){Ext.define("ModelLoader",{singleton:!0,beginLoadModels:function(models,callback,scope){Rally.data.ModelFactory.getModels({types:models,context:{},autoLoad:!0,success:callback,scope:scope})}}),Ext.define("PortfolioItemTypeLoader",{singleton:!0,getModelNames:function(callback,scope){Ext.create(Rally.data.WsapiDataStore,{autoLoad:!0,remoteFilter:!1,model:"TypeDefinition",sorters:{property:"Ordinal",direction:"Desc"},filters:[{property:"Parent.Name",operator:"=",value:"Portfolio Item"},{property:"Creatable",operator:"=",value:"true"}],listeners:{load:callback,scope:scope}})}}),PortfolioItemTypeLoader.getModelNames(this._setModelNames,this)},_drawChart:function(PIID,chartTitle){this.down("#buChart")&&this.remove("buChart"),this.add({xtype:"rallychart",itemId:"buChart",chartColors:["#000000","#89A54E","#AA4643","#3366FF"],storeType:"Rally.data.lookback.SnapshotStore",storeConfig:this._getStoreConfig(PIID),calculatorType:"Rally.example.BurnCalculator",calculatorConfig:{completedScheduleStateNames:["Accepted","Released"]},chartConfig:this._getChartConfig(chartTitle)})},_configureMessageListeners:function(models,piTypeNames){this.subscribe(this,Rally.Message.objectFocus,function(record){this._itemSelected(record,models,piTypeNames)},this)},_setModelNames:function(store,data){for(var PILength=data.length,piTypeNames={},typeDescription="",i=0;data.length>i;i++)typeDescription=data[i].get("TypePath").replace("/","").toLowerCase(),piTypeNames[typeDescription]={Name:data[i].get("Name"),TypePath:data[i].get("TypePath"),ChildTypePath:data[i+1]?data[i+1].get("TypePath"):"UserStory"};var piTypes=["UserStory"];for(var key in piTypeNames)"scheduledtestcase"!=key&&piTypes.push(piTypeNames[key].TypePath);ModelLoader.beginLoadModels(piTypes,function(models){this._configureMessageListeners(models,piTypeNames)},this)},_itemSelected:function(record,models,piTypeNames){this._drawChart(record.get("ObjectID"),record.get("FormattedID")+" - "+record.get("Name"))},_getStoreConfig:function(PIID){return{find:{_ItemHierarchy:PIID,_TypeHierarchy:"HierarchicalRequirement",Children:null},fetch:["ScheduleState","PlanEstimate"],hydrate:["ScheduleState"],sort:{_ValidFrom:1},context:this.getContext().getDataContext(),limit:1/0}},_getChartConfig:function(chartTitle){return{chart:{defaultSeriesType:"area",zoomType:"xy"},title:{text:chartTitle},xAxis:{categories:[],tickmarkPlacement:"on",tickInterval:5,title:{text:"Date",margin:10}},yAxis:[{title:{text:"Points"}}],tooltip:{formatter:function(){return""+this.x+"<br />"+this.series.name+": "+this.y}},plotOptions:{series:{marker:{enabled:!1,states:{hover:{enabled:!0}}},groupPadding:.01},column:{stacking:null,shadow:!1}}}}});
+
+            Rally.launchApp('Rally.example.BurnChart', {
+                name:"PIBurnupFromSelect",
+	            parentRepos:""
+            });
+
+        });
+    </script>
+
+
+    <style type="text/css">
+        
+    </style>
+</head>
+<body>
+</body>
+</html>
