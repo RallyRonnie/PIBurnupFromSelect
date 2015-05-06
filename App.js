@@ -68,7 +68,7 @@ Ext.define('Rally.example.BurnChart', {
             getModelNames: function(callback, scope) {
                 Ext.create(Rally.data.WsapiDataStore, {
                     autoLoad: true,
-                    remoteFilter: false,
+                    remoteFilter: true,
                     model: 'TypeDefinition',
                     sorters: {
                         property: 'Ordinal',
