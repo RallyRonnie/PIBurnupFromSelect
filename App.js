@@ -1,4 +1,4 @@
-Ext.define('Rally.example.BurnCalculator', {
+Ext.define('Rally.example.CustomList', {
     extend: 'Rally.data.lookback.calculator.TimeSeriesCalculator',
     config: {
         completedScheduleStateNames: ['Accepted']
